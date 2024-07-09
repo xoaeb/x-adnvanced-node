@@ -13,3 +13,11 @@ This is a simple Node.js application using Express.js that demonstrates basic CR
    ```sh
    git clone https://github.com/yourusername/simple-node-app.git
    cd simple-node-app
+
+
+This `README.md` file now includes the explanation of how the worker threads are used in the application to handle CPU-intensive tasks. Feel free to customize it further as needed.
+
+
+
+
+
