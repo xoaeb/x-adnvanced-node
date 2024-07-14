@@ -27,7 +27,10 @@ redisClient.connect().catch((err) => {
 DEFAULT_EXPIRATION = 3600; //EXPIRE AFTER 120s
 
 app.get("/photos", async(req, res) => {
-    const photos = await redisClient.get("photos");
+    const albumId = req.query.albumId;
+
+    const photos = await redisClient.get(`photos?albumId=${albumId}`);
+    //getting data with album id takes significantly less time when caching 800ms compared to 20ms 
 
     try {
         if (photos != null) {
@@ -35,12 +38,15 @@ app.get("/photos", async(req, res) => {
 
             // this takes about 50 ms
         } else {
-            const albumId = req.query.albumId;
             const { data } = await axios.get(
                 "https://jsonplaceholder.typicode.com/photos", { params: { albumId } }
             );
 
-            redisClient.setEx("photos", DEFAULT_EXPIRATION, JSON.stringify(data));
+            redisClient.setEx(
+                `photos?albumId=${albumId}`,
+                DEFAULT_EXPIRATION,
+                JSON.stringify(data)
+            );
             res.json(data);
 
             //this takes around 300ms
@@ -57,7 +63,8 @@ app.get("/photos", async(req, res) => {
 
 app.get("/photos/:id", async(req, res) => {
     const { data } = await axios.get(
-        `https://jsonplaceholder.typicode.com/photos/${req.params.id}`
+        `
+                        https: //jsonplaceholder.typicode.com/photos/${req.params.id}`
     );
     res.json(data);
 });
