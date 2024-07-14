@@ -30,29 +30,30 @@ app.get("/photos", async(req, res) => {
     const albumId = req.query.albumId;
 
     const photos = await redisClient.get(`photos?albumId=${albumId}`);
-    //getting data with album id takes significantly less time when caching 800ms compared to 20ms 
+    //getting data with album id takes significantly less time when caching 800ms compared to 20ms
 
     try {
-        if (photos != null) {
-            return res.json(JSON.parse(photos));
+        if (photos) {
+            return res.status(200).json(JSON.parse(photos));
 
             // this takes about 50 ms
-        } else {
-            const { data } = await axios.get(
-                "https://jsonplaceholder.typicode.com/photos", { params: { albumId } }
-            );
-
-            redisClient.setEx(
-                `photos?albumId=${albumId}`,
-                DEFAULT_EXPIRATION,
-                JSON.stringify(data)
-            );
-            res.json(data);
-
-            //this takes around 300ms
         }
+        const { data } = await axios.get(
+            "https://jsonplaceholder.typicode.com/photos", { params: { albumId } }
+        );
+
+        redisClient.setEx(
+            `photos?albumId=${albumId}`,
+            DEFAULT_EXPIRATION,
+            JSON.stringify(data)
+        );
+        res.status(200).json(data);
+
+        //this takes around 300ms
     } catch (error) {
         console.log(error);
+        res.status(500).json({ message: "Internal Server Error" });
+
     }
 });
 
